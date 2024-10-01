@@ -1,5 +1,5 @@
 # ext-Reformatter-LLM
-Reformat texts using LLM's and Ollama
+Reformat texts using LLM's and Ollama- (Will later change to use llama cpp pip instead to make it easier on everyone)
 
 
 # 📚 Text-Reformatter-LLM 📚

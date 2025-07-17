@@ -31,9 +31,6 @@ pip install ollama nltk tqdm
 #### Step 2: Install Ollama
 Visit [Ollama](https://ollama.com) and follow the instructions to install the **Ollama** application locally on your machine.
 
-#### Step 3: Download NLTK data
-The app uses NLTK's `punkt` tokenizer. It will automatically prompt you to download the necessary data if it’s not available.
-
 #### Step 4: Clone the Repository and Run the App
 
 1. Clone the repository:

@@ -4,6 +4,12 @@ import nltk
 from nltk.tokenize import sent_tokenize
 from tqdm import tqdm
 
+DEFAULT_PROMPT = (
+    "Reformat the following sentence for proper quote usage. "
+    "Output only the reformatted sentence, and nothing else.\n"
+    "{sentence}"
+)
+
 def download_nltk_data():
     try:
         sent_tokenize("test")  # Attempt to use the tokenizer to check if it's available
@@ -28,14 +34,15 @@ def check_model(model_name):
     except Exception as e:
         return False
 
-def format_quotes_in_text(model_name, text_content, output_file):
+def format_quotes_in_text(model_name, text_content, output_file, prompt_template):
     download_nltk_data()  # Ensure NLTK data is available
     sentences = sent_tokenize(text_content)
     formatted_text = []
 
     # Using tqdm to show progress
     for sentence in tqdm(sentences, desc="Formatting Sentences"):
-        response = ollama.generate(model=model_name, prompt=sentence)
+        prompt = prompt_template.format(sentence=sentence)
+        response = ollama.generate(model=model_name, prompt=prompt)
         if 'message' in response and 'content' in response['message']:
             formatted_text.append(response['message']['content'].strip())
         else:
@@ -47,11 +54,29 @@ def format_quotes_in_text(model_name, text_content, output_file):
     print(f"Formatted text saved to {output_file}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Format quotes in text using Ollama LLM.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Format quotes in text using Ollama LLM.\n"
+            "You can provide a custom prompt template with --prompt. The default is:\n"
+            f"    {DEFAULT_PROMPT.replace('{sentence}', '[sentence]')}\n"
+            "Use '{sentence}' in your prompt to substitute the target sentence."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("--modelname", "-m", "-model", required=True, help="Name of the Ollama model.")
     parser.add_argument("--textfile_input", "--input", "-in", required=True, help="Path to the input text file.")
-    parser.add_argument("-o", "--output","-out", default="output.txt", help="Optional output file name.")
-    
+    parser.add_argument("-o", "--output", "-out", default="output.txt", help="Optional output file name.")
+    parser.add_argument(
+        "--prompt",
+        help=(
+            "Custom prompt template to use for each sentence. "
+            "Use '{sentence}' where the input sentence should be inserted. "
+            "If not provided, defaults to:\n"
+            f"{DEFAULT_PROMPT.replace('{sentence}', '[sentence]')}"
+        ),
+        default=DEFAULT_PROMPT
+    )
+
     args = parser.parse_args()
 
     if not check_model(args.modelname):
@@ -60,7 +85,7 @@ def main():
     with open(args.textfile_input, 'r') as file:
         text_content = file.read()
 
-    format_quotes_in_text(args.modelname, text_content, args.output)
+    format_quotes_in_text(args.modelname, text_content, args.output, args.prompt)
 
 if __name__ == "__main__":
     main()

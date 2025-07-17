@@ -14,8 +14,9 @@ def download_nltk_data():
     try:
         sent_tokenize("test")  # Attempt to use the tokenizer to check if it's available
     except LookupError:
-        print("Downloading NLTK 'punkt' tokenizer...")
+        print("Downloading NLTK tokenizer data...")
         nltk.download('punkt')
+        nltk.download('punkt_tab')
 
 def install_model(model_name):
     print(f"Model '{model_name}' not found.")
@@ -29,9 +30,12 @@ def install_model(model_name):
 
 def check_model(model_name):
     try:
-        ollama.list()  # Adjusted to use list, which presumably shows available models
-        return True
+        models_response = ollama.list()
+        # Check if the specified model exists in the list of available models
+        available_models = [model.model for model in models_response.models if model.model]
+        return model_name in available_models
     except Exception as e:
+        print(f"Error checking models: {e}")
         return False
 
 def format_quotes_in_text(model_name, text_content, output_file, prompt_template):
@@ -42,11 +46,16 @@ def format_quotes_in_text(model_name, text_content, output_file, prompt_template
     # Using tqdm to show progress
     for sentence in tqdm(sentences, desc="Formatting Sentences"):
         prompt = prompt_template.format(sentence=sentence)
-        response = ollama.generate(model=model_name, prompt=prompt)
-        if 'message' in response and 'content' in response['message']:
-            formatted_text.append(response['message']['content'].strip())
-        else:
-            print("Unexpected response format:", response)
+        try:
+            response = ollama.generate(model=model_name, prompt=prompt)
+            if 'message' in response and 'content' in response['message']:
+                formatted_text.append(response['message']['content'].strip())
+            else:
+                print("Unexpected response format:", response)
+                formatted_text.append(sentence)  # Fallback to the original sentence
+        except Exception as e:
+            print(f"Error generating response for sentence: {e}")
+            print(f"This may indicate the model '{model_name}' is not available.")
             formatted_text.append(sentence)  # Fallback to the original sentence
 
     with open(output_file, 'w') as file:

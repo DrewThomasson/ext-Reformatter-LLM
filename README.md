@@ -6,9 +6,9 @@ Reformat texts using LLM's and Ollama- (Will later change to use llama cpp pip i
 
 A Python app that leverages **Ollama LLM** to format lines in your ebook, making sure quotes are used correctly and the text is polished, perfect for further processing with **BookNLP**. 
 
-## 🌟 Features
+## Features
 - Automatically formats ebook quotes for cleaner text.
-- Seamlessly integrates with **Ollama** for powerful natural language generation.
+- Uses Ollama for LLM useage
 - Outputs formatted text in a new file.
 
 ## 🚀 Quick Start Guide
@@ -55,23 +55,52 @@ python reformat_ebook.py --modelname MODEL_NAME --input INPUT_FILE.txt -o OUTPUT
 python reformat_ebook.py --modelname llm-english --input story.txt -o formatted_story.txt
 ```
 
-This command reads the file `story.txt`, reformats the text using the **llm-english** model, and outputs the formatted version into `formatted_story.txt`.
-
 ### ⚙️ Arguments
 - `--modelname` / `-m`: The name of the Ollama model to use.
 - `--input` / `-in`: Path to the input text file.
 - `--output` / `-o`: Optional output file name (defaults to `output.txt`).
+- `--prompt`: *(Optional)* Custom prompt template for the model. Use `{sentence}` in your prompt template to substitute each sentence from your input file.  
+  If not provided, the default prompt is:  
+  ```
+  Reformat the following sentence for proper quote usage. Output only the reformatted sentence, and nothing else.
+  {sentence}
+  ```
+
+### Help Command 
+
+You can view all available command-line options and see the default prompt by running:
+```bash
+usage: reformat_ebook.py [-h] --modelname MODELNAME --textfile_input TEXTFILE_INPUT [-o OUTPUT] [--prompt PROMPT]
+
+Format quotes in text using Ollama LLM.
+You can provide a custom prompt template with --prompt. The default is:
+    Reformat the following sentence for proper quote usage. Output only the reformatted sentence, and nothing else.
+    [sentence]
+Use '{sentence}' in your prompt to substitute the target sentence.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --modelname MODELNAME, -m MODELNAME, -model MODELNAME
+                        Name of the Ollama model.
+  --textfile_input TEXTFILE_INPUT, --input TEXTFILE_INPUT, -in TEXTFILE_INPUT
+                        Path to the input text file.
+  -o OUTPUT, --output OUTPUT, -out OUTPUT
+                        Optional output file name.
+  --prompt PROMPT       Custom prompt template to use for each sentence. Use '{sentence}' where the input sentence should be inserted. If not provided, defaults to:
+                        Reformat the following sentence for proper quote usage. Output only the reformatted sentence, and nothing else.
+                        [sentence]
+```
+
 
 ### 4. Customization
-The default behavior ensures that the quotes in the input text are formatted correctly. You can further tweak the prompt in the `reformat_ebook.py` to adjust the formatting style or add additional model logic.
-
-### 🌐 Dependencies
-- **Ollama**: Install from [Ollama](https://ollama.com).
-- **nltk**: Natural Language Toolkit for sentence tokenization.
-- **tqdm**: For showing progress during text processing.
+By default, the script ensures that the quotes in the input text are formatted correctly by prompting the LLM for each sentence.  
+**Customization:**  
+- To change the model's behavior, use `--prompt` with your own instruction string, for example:
+  ```bash
+  python reformat_ebook.py --modelname llm-english --input story.txt --output formatted_story.txt --prompt "Correct grammar and punctuation for the following sentence. Output only the corrected sentence:\n{sentence}"
+  ```
+- The placeholder `{sentence}` will be replaced with each sentence from your input file.
 
 ### 🔧 Troubleshooting
 - If the model isn't installed, the app will prompt you to pull it using Ollama.
 - If you encounter any issues, ensure that **Ollama** is correctly installed and running locally.
-
-Enjoy a well-formatted, quote-perfect ebook! 📖✨
